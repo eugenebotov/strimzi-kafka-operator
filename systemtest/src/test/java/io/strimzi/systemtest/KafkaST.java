@@ -19,17 +19,13 @@ import io.strimzi.api.kafka.model.KafkaTopic;
 import io.strimzi.api.kafka.model.KafkaUser;
 import io.strimzi.api.kafka.model.PasswordSecretSource;
 import io.strimzi.api.kafka.model.ZookeeperClusterSpec;
-import io.strimzi.test.timemeasuring.Operation;
-import io.strimzi.test.timemeasuring.TimeMeasuringSystem;
-import io.strimzi.systemtest.timemeasuring.Operation;
-import io.strimzi.systemtest.timemeasuring.TimeMeasuringSystem;
 import io.strimzi.systemtest.utils.StUtils;
 import io.strimzi.test.TestUtils;
-import io.strimzi.test.annotations.ClusterOperator;
-import io.strimzi.test.annotations.Namespace;
 import io.strimzi.test.annotations.OpenShiftOnly;
 import io.strimzi.test.extensions.StrimziExtension;
 import io.strimzi.test.k8s.Oc;
+import io.strimzi.test.timemeasuring.Operation;
+import io.strimzi.test.timemeasuring.TimeMeasuringSystem;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
@@ -70,10 +66,6 @@ import static io.strimzi.test.extensions.StrimziExtension.ACCEPTANCE;
 import static io.strimzi.test.extensions.StrimziExtension.CCI_FLAKY;
 import static io.strimzi.test.extensions.StrimziExtension.FLAKY;
 import static io.strimzi.test.extensions.StrimziExtension.REGRESSION;
-import static io.strimzi.test.extensions.StrimziExtension.TOPIC_CM;
-import static io.strimzi.test.TestUtils.fromYamlString;
-import static io.strimzi.test.TestUtils.map;
-import static io.strimzi.test.TestUtils.waitFor;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -201,7 +193,7 @@ class KafkaST extends AbstractST {
         Kafka kafka = resources().kafkaEphemeral(CLUSTER_NAME, 3).done();
 
         // Get pod name to check termination process
-        Optional<Pod> pod = client.pods().inNamespace(kubeClient.namespace()).list().getItems()
+        Optional<Pod> pod = CLIENT.pods().inNamespace(KUBE_CLIENT.namespace()).list().getItems()
                 .stream().filter(p -> p.getMetadata().getName().startsWith(entityOperatorDeploymentName(CLUSTER_NAME)))
                 .findFirst();
 
@@ -213,8 +205,8 @@ class KafkaST extends AbstractST {
         resources.kafka(kafka).done();
 
         // Wait when EO(UO + TO) will be removed
-        kubeClient.waitForResourceDeletion("deployment", entityOperatorDeploymentName(CLUSTER_NAME));
-        kubeClient.waitForResourceDeletion("pod", pod.get().getMetadata().getName());
+        KUBE_CLIENT.waitForResourceDeletion("deployment", entityOperatorDeploymentName(CLUSTER_NAME));
+        KUBE_CLIENT.waitForResourceDeletion("pod", pod.get().getMetadata().getName());
     }
 
     @Test
@@ -599,7 +591,7 @@ class KafkaST extends AbstractST {
         assertExpectedJavaOpts(zookeeperPodName(CLUSTER_NAME, 0),
                 "-Xmx600m", "-Xms300m", "-server", "-XX:+UseG1GC");
 
-        Optional<Pod> pod = CLIENT.pods().inNamespace(kubeClient.namespace()).list().getItems()
+        Optional<Pod> pod = CLIENT.pods().inNamespace(KUBE_CLIENT.namespace()).list().getItems()
                 .stream().filter(p -> p.getMetadata().getName().startsWith(entityOperatorDeploymentName(CLUSTER_NAME)))
                 .findFirst();
         assertTrue(pod.isPresent(), "EO pod does not exist");
