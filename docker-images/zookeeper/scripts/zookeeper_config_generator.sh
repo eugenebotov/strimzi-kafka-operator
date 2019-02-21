@@ -16,6 +16,6 @@ NODE=1
 # FOLLOWER_PORT=$(expr 10 \* 2888)
 # ELECTION_PORT=$(expr 10 \* 3888)
 while [ $NODE -le $ZOOKEEPER_NODE_COUNT ]; do
-  echo "server.$($NODE-1)=my-cluster-zookeeper-${NODE}.my-cluster-zookeeper-headless:2888:3888"
+  echo "server.${NODE}=my-cluster-zookeeper-$(expr $NODE - 1).my-cluster-zookeeper-headless:2888:3888"
   let NODE=NODE+1
 done
